@@ -1,0 +1,38 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  overflow: hidden;
+  background: #111;
+  width: 100vw;
+  height: 100vh;
+}
+canvas {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+}
+#controls {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+}
+button {
+  padding: 8px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 6px;
+  background-color: #333;
+  color: #fff;
+  cursor: pointer;
+}
+button:hover {
+  background-color: #666;
+}
