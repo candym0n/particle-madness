@@ -51,6 +51,7 @@ function animate(now) {
     ctx.restore();
     requestAnimationFrame(animate);
 }
+
 requestAnimationFrame(animate);
 
 /**

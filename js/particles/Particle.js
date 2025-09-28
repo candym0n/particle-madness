@@ -1,3 +1,7 @@
+import { PARTICLE_RADIUS, PARTICLE_VICINITY } from "../constants.js";
+import { distSquared, diversity } from "../utils.js";
+import { ParticleSystem } from "./ParticleSystem.js";
+
 /**
  * Represents a single particle in the system.
  */
@@ -15,34 +19,87 @@ export class Particle {
         this.x = x;
         /** @type {number} */
         this.y = y;
+
         /** @type {number} */
         this.vx = vx;
         /** @type {number} */
         this.vy = vy;
+
         /** @type {{r:number, g:number, b:number}} */
         this.color = color;
         /** @type {number} */
         this.life = life;
+
+
+        /** @type {Particle} */
+        this.following = null; // particle this one wants to breed with
+        /** @type {number} */
+        this.followingDiversity = 0; // diversity of the above relative to this
+        
+        /** @type {number} */
+        this.recoveryTimer = 5; // time in ms until can interact again
+
+        /** @type {number} */
+        this.lookingRadius = PARTICLE_VICINITY; // The radius of the neighborhood
+    }
+
+    /**
+     * Whether or not this particle is in recovery
+     */
+    get inRecovery() {
+        return this.recoveryTimer > 0;
     }
 
     /**
      * Update particle state.
      * @param {number} dt - Time delta
      * @param {Particle[]} neighbors - Nearby particles
+     * @param {(parentA: Particle, parentB: Particle) => void} interact - A function to breed
      */
-    update(dt, neighbors) {
-        this.x += this.vx * dt;
-        this.y += this.vy * dt;
-        this.life -= dt * 1; // Faster decay for demo
-        // Sample repulsion (basic physics)
-        for (let n of neighbors) {
-            const dx = this.x - n.x, dy = this.y - n.y;
-            const dsq = dx * dx + dy * dy + 0.01;
-            if (dsq < 10000 && dsq > 0.1) {
-                this.vx += (dx / dsq) * dt * 80;
-                this.vy += (dy / dsq) * dt * 80;
+    update(dt, neighbors, interact) {
+        // Update the position
+        this.x += this.vx;
+        this.y += this.vy;
+
+        if (!this.inRecovery) {
+            // We are lonely :(
+            if (neighbors.length === 0)
+                this.lookingRadius += dt * 10; // increase search radius
+            else
+                this.lookingRadius = PARTICLE_VICINITY; // reset search radius
+
+            for (let n of neighbors) {
+                // Diversity of neighbor
+                const div = diversity(this, n);
+                
+                // Try to nteract with any open neighbor that we are touching
+                if (interact(this, n)) {
+                    this.following = n;
+                    this.followingDiversity = div;
+                }
+
+                // Find and follow the most diverse neighbor
+                if (div > this.followingDiversity) {
+                    this.following = n;
+                    this.followingDiversity = div;
+                }
             }
         }
+
+        // Move towards the particle we follow
+        if (this.following) {
+            const dx = this.following.x - this.x;
+            const dy = this.following.y - this.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist > 1) {
+                this.vx += (dx / dist) * dt;
+                this.vy += (dy / dist) * dt;
+            }
+        }
+
+        // Friction
+        //this.vx *= 0.99;
+        //this.vy *= 0.99;
     }
 
     /**
