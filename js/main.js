@@ -78,7 +78,7 @@ function animate(now) {
 
     ctx.translate(canvas.width/2, canvas.height/2); // move origin to center
     for (let i = 0; i < speed; ++i) {
-        system.update(dt);
+        system.update(dt, diversity);
     }
     system.draw(ctx);
 
@@ -106,6 +106,11 @@ CONTROL_ELEMENTS.SPEED_SLIDER.addEventListener('input', (e) => {
     CONTROL_ELEMENTS.SPEED_VALUE.textContent = speed;
 });
 
+CONTROL_ELEMENTS.DIVERSITY_SLIDER.addEventListener('input', (e) => {
+    diversity = e.target.value;
+    CONTROL_ELEMENTS.DIVERSITY_VALUE.textContent = diversity + "%";
+});
+
 const collapseBtn = document.getElementById('collapseToggle');
 const controls = document.querySelector('.particle-controls');
 
@@ -116,7 +121,7 @@ collapseBtn.addEventListener('click', () => {
         collapseBtn.textContent = '+';
         collapseBtn.setAttribute('aria-label', 'Expand');
     } else {
-        collapseBtn.textContent = '−';
+        collapseBtn.textContent = '-';
         collapseBtn.setAttribute('aria-label', 'Collapse');
     }
 });
