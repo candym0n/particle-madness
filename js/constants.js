@@ -34,3 +34,16 @@ export const INTERACTION_PROBABILITIES = {
     BREED_MIN: 0.3, // 0 diversity
     BREED_MAX: 0.6, // Add this if there's 100% diversity (nearly impossible)
 }
+
+export const CONTROL_ELEMENTS = {
+    SPEED_SLIDER: document.getElementById('speedSlider'),
+    SPEED_VALUE: document.getElementById('speedValue'),
+
+    DIVERSITY_SLIDER: document.getElementById('diversitySlider'),
+    DIVERSITY_VALUE: document.getElementById('diversityValue'),
+
+    PARTICLE_COUNT: document.getElementById('particleCount'),
+
+    AVG_COLOR_RGB: document.getElementById('avgColorRGB'),
+    AVG_COLOR_SWATCH: document.getElementById('avgColorSwatch'),
+}

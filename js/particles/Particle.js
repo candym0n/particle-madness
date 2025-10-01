@@ -55,8 +55,9 @@ export class Particle {
      * @param {number} dt - Time delta
      * @param {Particle[]} neighbors - Nearby particles
      * @param {(parentA: Particle, parentB: Particle) => void} interact - A function to breed
+     * @param {number} diversityNum - Tendancy to explore diversity (0-100)
      */
-    update(dt, neighbors, interact) {
+    update(dt, neighbors, interact, diversityNum) {
         // Update the position
         this.x += this.vx;
         this.y += this.vy;
@@ -81,8 +82,8 @@ export class Particle {
                 
                 // Follow the neighbor if it's good
                 if (
-                    (localDiv < 10 && !(div < this.followingDiversity)) ||
-                    (localDiv > 10 && !(div > this.followingDiversity))
+                    (localDiv < diversityNum && !(div < this.followingDiversity)) ||
+                    (localDiv > diversityNum && !(div > this.followingDiversity))
                 ) {
                     this.following = n;
                     this.followingDiversity = div;

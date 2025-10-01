@@ -1,15 +1,18 @@
 html, body {
   height: 100%;
   margin: 0;
-  padding: 0;
+  padding: 10px;
   box-sizing: border-box;
+  user-select: none;
 }
+
 body {
   overflow: hidden;
   background: #111;
   width: 100vw;
   height: 100vh;
 }
+
 canvas {
   display: block;
   position: absolute;
@@ -18,21 +21,207 @@ canvas {
   width: 100vw;
   height: 100vh;
 }
-#controls {
-  position: absolute;
-  top: 16px;
-  left: 16px;
+
+.particle-controls {
+  max-width: 460px;
+  padding: 24px 28px;
+  background: #1e2230;
+  border-radius: 16px;
+  box-shadow: 0 2px 14px rgba(20, 20, 33, 0.09);
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  color: #e3e6f3;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  position: relative;
+  transition: height 0.3s, min-height 0.3s, padding 0.3s;
+}
+
+.collapse-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 26px;
+    height: 26px;
+    border: none;
+    background: #444;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 18px;
+    line-height: 22px;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    transition: background 0.2s;
+}
+
+.collapse-btn:hover {
+    background: #666;
+}
+
+
+.control-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
   z-index: 10;
 }
-button {
-  padding: 8px 20px;
-  font-size: 16px;
-  border: none;
-  border-radius: 6px;
-  background-color: #333;
-  color: #fff;
+
+label {
+  width: 80px;
+  font-size: 1.05em;
+  font-weight: 500;
+  color: #b5b9df;
+}
+
+.slider {
+  width: 150px;
+  height: 4px;
+  background: #3b4371;
+  border-radius: 3px;
+  outline: none;
+  transition: background 0.3s;
+  margin: 0 10px;
+}
+.slider:hover {
+  background: #4e52a4;
+}
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  background: #6e7ff3;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #434871;
+  box-shadow: 0 2px 6px rgba(80,80,120,0.1);
+  cursor: pointer;
+  transition: background 0.25s;
+}
+.slider::-webkit-slider-thumb:hover {
+  background: #89a2fb;
+}
+.slider::-moz-range-thumb {
+  background: #6e7ff3;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #434871;
   cursor: pointer;
 }
-button:hover {
-  background-color: #666;
+.slider::-ms-thumb {
+  background: #6e7ff3;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #434871;
+  cursor: pointer;
+}
+
+.slider::-ms-fill-lower {
+  background: #3b4371;
+}
+.slider::-ms-fill-upper {
+  background: #4e52a4;
+}
+.slider:focus {
+  outline: none;
+}
+/* Value indicators */
+#speedValue, #diversityValue {
+  min-width: 34px;
+  background: #24263e;
+  border-radius: 5px;
+  padding: 3px 10px;
+  font-weight: bold;
+  font-size: 1.06em;
+  color: #70befc;
+}
+
+/* Displays for particle count and color */
+.display-group {
+  display: flex;
+  gap: 24px;
+}
+
+.display-box {
+  background: #21243e;
+  border-radius: 12px;
+  padding: 16px 22px;
+  min-width: 100px;
+  min-height: 65px;
+  box-shadow: 0 2px 8px rgba(10,10,20,0.09);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+}
+
+.display-title {
+  font-size: 0.93em;
+  color: #babee4;
+}
+
+#particleCount {
+  font-size: 1.4em;
+  font-weight: bold;
+  letter-spacing: 1px;
+  color: #ffd26e;
+}
+
+.color-row {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+}
+
+#avgColorRGB {
+  font-size: 1.08em;
+  color: #99f0f1;
+}
+
+#avgColorSwatch {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1.5px solid #434871;
+  box-shadow: 0 1px 6px rgba(160,160,160,0.18);
+}
+
+.play-btn {
+  min-width: 90px;
+  padding: 10px 0;
+  border: none;
+  border-radius: 8px;
+  background: #6e7ff3;
+  color: #fff;
+  font-size: 1.11em;
+  font-weight: 600;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 7px rgba(40, 60, 120, 0.15);
+  cursor: pointer;
+  margin-bottom: 12px;
+  transition: background 0.17s, box-shadow 0.17s, transform 0.13s;
+}
+
+.play-btn:hover {
+  background: #4f5dc4;
+  box-shadow: 0 4px 16px rgba(80, 120, 220, 0.15);
+  color: #fff;
+  outline: none;
+  transform: translateY(-2px) scale(1.03);
+}
+
+.particle-controls.collapsed {
+    min-height: 0;
+    height: 48px;
+    padding-bottom: 8px;
+    padding-top: 8px;
+    overflow: hidden;
+}
+
+.particle-controls.collapsed .control-group,
+.particle-controls.collapsed .display-group {
+    display: none;
 }

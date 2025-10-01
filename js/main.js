@@ -1,4 +1,4 @@
-import { PARTICLE_RADIUS } from './constants.js';
+import { CONTROL_ELEMENTS, PARTICLE_RADIUS } from './constants.js';
 import { ParticleSystem } from './particles/ParticleSystem.js';
 import { Particle } from './particles/Particle.js';
 
@@ -10,6 +10,8 @@ const playPauseBtn = document.getElementById('playPauseBtn');
 
 let system;
 let running = true;
+let speed = 5; // 1-10
+let diversity = 10; // 0-100
 
 /**
  * Resize canvas and re-center origin.
@@ -75,7 +77,7 @@ function animate(now) {
     ctx.clearRect(0, 0, canvas.width, canvas.height); // clear with default origin
 
     ctx.translate(canvas.width/2, canvas.height/2); // move origin to center
-    for (let i = 0; i < 10; ++i) {
+    for (let i = 0; i < speed; ++i) {
         system.update(dt);
     }
     system.draw(ctx);
@@ -97,4 +99,25 @@ function togglePlayPause() {
         requestAnimationFrame(animate);
     }
 }
+
 playPauseBtn.addEventListener('click', togglePlayPause);
+CONTROL_ELEMENTS.SPEED_SLIDER.addEventListener('input', (e) => {
+    speed = e.target.value;
+    CONTROL_ELEMENTS.SPEED_VALUE.textContent = speed;
+});
+
+const collapseBtn = document.getElementById('collapseToggle');
+const controls = document.querySelector('.particle-controls');
+
+collapseBtn.addEventListener('click', () => {
+    controls.classList.toggle('collapsed');
+    // Change icon based on state
+    if (controls.classList.contains('collapsed')) {
+        collapseBtn.textContent = '+';
+        collapseBtn.setAttribute('aria-label', 'Expand');
+    } else {
+        collapseBtn.textContent = '−';
+        collapseBtn.setAttribute('aria-label', 'Collapse');
+    }
+});
+

@@ -1,6 +1,6 @@
 import { Particle } from './Particle.js';
 import { randRange, distSquared, addToAverage, removeFromAverage, lerp, diversity } from '../utils.js';
-import { PARTICLE_RADIUS, PARTICLE_RECOVERY, INTERACTION_PROBABILITIES } from '../constants.js';
+import { PARTICLE_RADIUS, PARTICLE_RECOVERY, INTERACTION_PROBABILITIES, CONTROL_ELEMENTS } from '../constants.js';
 
 /**
  * Manages a collection of particles.
@@ -30,14 +30,15 @@ export class ParticleSystem {
     /**
      * Update all particles in the system.
      * @param {number} dt
+     * @param {number} diversity - Tendancy to explore diversity (0-100)
      */
-    update(dt) {
+    update(dt, diversity=0) {
         const self = this;
 
         for (let i = this.particles.length - 1; i >= 0; --i) {
             let p = this.particles[i];
             const neighbors = self.findNeighbors(p);
-            p.update(dt, neighbors, self.attemptBreed.bind(self));
+            p.update(dt, neighbors, self.attemptBreed.bind(self), diversity);
            
             p.recoveryTimer -= dt * 1000;
             p.life -= dt;
@@ -98,17 +99,10 @@ export class ParticleSystem {
             p.draw(ctx, PARTICLE_RADIUS);
         }
 
-        // Draw the debug information
-        const left = -this.width / 2 + 10;
-        const top = this.height / 2 - 110;
-        ctx.save();
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-        ctx.fillRect(left, top, 200, 100);
-        ctx.fillStyle = 'black';
-        ctx.font = '12px sans-serif';
-        ctx.fillText(`Particles: ${this.particles.length}`, left, top + 30);
-        ctx.fillText(`Avg Color: (${Math.round(this.averageColor.r)},${Math.round(this.averageColor.g)},${Math.round(this.averageColor.b)})`, left, top + 60);
-        ctx.restore();
+        // "Draw" the debug information
+        CONTROL_ELEMENTS.PARTICLE_COUNT.textContent = this.particles.length;
+        CONTROL_ELEMENTS.AVG_COLOR_RGB.textContent = `(${Math.round(this.averageColor.r)}, ${Math.round(this.averageColor.g)}, ${Math.round(this.averageColor.b)})`;
+        CONTROL_ELEMENTS.AVG_COLOR_SWATCH.style.backgroundColor = `rgb(${Math.round(this.averageColor.r)}, ${Math.round(this.averageColor.g)}, ${Math.round(this.averageColor.b)})`;
     }
 
     /**

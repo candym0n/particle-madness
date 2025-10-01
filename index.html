@@ -1,16 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Particle Canvas</title>
     <link rel="stylesheet" href="style/main.css">
 </head>
+
 <body>
     <canvas id="particleCanvas"></canvas>
-    <div id="controls">
-        <button id="playPauseBtn">Pause</button>
+    <div class="particle-controls">
+        <button class="collapse-btn" id="collapseToggle" aria-label="Collapse">−</button>
+        <div class="control-group">
+            <label for="speedSlider">Speed</label>
+            <input id="speedSlider" type="range" min="1" max="50" step="1" value="5" class="slider" />
+            <span id="speedValue">5</span>
+        </div>
+        <div class="control-group">
+            <label for="diversitySlider">Diversity</label>
+            <input id="diversitySlider" type="range" min="0" max="100" step="1" value="50" class="slider" />
+            <span id="diversityValue">50%</span>
+        </div>
+        <div class="display-group">
+            <div class="display-box">
+                <span class="display-title">Particles</span>
+                <span id="particleCount">42</span>
+            </div>
+            <div class="display-box color-display">
+                <span class="display-title">Average Color</span>
+                <div class="color-row">
+                    <span id="avgColorRGB">R: 85 G: 85 B: 85</span>
+                    <span id="avgColorSwatch" style="background: rgb(85, 85, 85);"></span>
+                </div>
+            </div>
+        </div>
+        <div class="control-group">
+            <button class="play-btn" id="playPauseBtn">Pause</button>
+        </div>
     </div>
+
     <script type="module" src="js/main.js"></script>
 </body>
+
 </html>
