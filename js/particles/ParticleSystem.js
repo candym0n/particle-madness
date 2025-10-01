@@ -1,6 +1,6 @@
 import { Particle } from './Particle.js';
 import { randRange, distSquared, addToAverage, removeFromAverage, lerp, diversity } from '../utils.js';
-import { PARTICLE_VICINITY, PARTICLE_RADIUS, PARTICLE_RECOVERY } from '../constants.js';
+import { PARTICLE_RADIUS, PARTICLE_RECOVERY, INTERACTION_PROBABILITIES } from '../constants.js';
 
 /**
  * Manages a collection of particles.
@@ -45,22 +45,22 @@ export class ParticleSystem {
             // Bouncy bouncy
             if (p.x < -this.width/2) {
                 p.x = -this.width/2;
-                p.vx = Math.abs(p.vx) * 0.5;
+                p.vx = Math.abs(p.vx);
             }
 
             if (p.x > this.width/2) {
                 p.x = this.width/2;
-                p.vx = -Math.abs(p.vx) * 0.5;
+                p.vx = -Math.abs(p.vx);
             }
 
             if (p.y < -this.height/2) {
                 p.y = -this.height/2;
-                p.vy = Math.abs(p.vy) * 0.5;
+                p.vy = Math.abs(p.vy);
             }
 
             if (p.y > this.height/2) {
                 p.y = this.height/2;
-                p.vy = -Math.abs(p.vy) * 0.5;
+                p.vy = -Math.abs(p.vy);
             }
 
             if (p.life <= 0) {
@@ -115,9 +115,10 @@ export class ParticleSystem {
      * Try to create a new particle from two parents.
      * @param {Particle} parentA - ME!
      * @param {Particle} parentB - The one I want to breed with
+     * @param {boolean}  dontMate - We can't mate because of whatever
      * @return {boolean} True if interaction occured
      */
-    attemptBreed(parentA, parentB) {
+    attemptBreed(parentA, parentB, dontMate) {
         // Are they both allowed to breed?
         if (parentA.inRecovery || parentB.inRecovery)
             return false;
@@ -132,7 +133,7 @@ export class ParticleSystem {
         // Probability check
         let random = Math.random();
 
-        if (random <= 0.2) { // 20% chance of identity blend
+        if (random <= INTERACTION_PROBABILITIES.IDENTITY) {
             parentA.color = { r: lerp(parentA.color.r, parentB.color.r, 0.3 + randRange(-0.1, 0.1)),
                               g: lerp(parentA.color.g, parentB.color.g, 0.3 + randRange(-0.1, 0.1)),
                               b: lerp(parentA.color.b, parentB.color.b, 0.3 + randRange(-0.1, 0.1)) };
@@ -140,7 +141,7 @@ export class ParticleSystem {
                               g: lerp(parentB.color.g, parentA.color.g, 0.3 + randRange(-0.1, 0.1)),
                               b: lerp(parentB.color.b, parentA.color.b, 0.3 + randRange(-0.1, 0.1)) };
             return true;
-        } else if (random <= 0.4 + 0.004 * diversity(parentA, parentB)) { // up to 40% chance of breeding
+        } else if (!dontMate && random <= INTERACTION_PROBABILITIES.BREED_MIN + INTERACTION_PROBABILITIES.BREED_MAX * diversity(parentA, parentB) / 100) { // up to 40% chance of breeding
             parentA.life -= 20;
             parentB.life -= 20;
 
@@ -151,9 +152,9 @@ export class ParticleSystem {
             const vy = randRange(-1, 1);
             
             // Mix colors with some randomness
-            const r = Math.min(255, Math.max(0, Math.round((parentA.color.r + parentB.color.r) / 2 + randRange(-30, 30))));
-            const g = Math.min(255, Math.max(0, Math.round((parentA.color.g + parentB.color.g) / 2 + randRange(-30, 30))));
-            const b = Math.min(255, Math.max(0, Math.round((parentA.color.b + parentB.color.b) / 2 + randRange(-30, 30))));
+            const r = Math.min(255, Math.max(0, Math.round(lerp(parentA.color.r, parentB.color.r, randRange(0, 1)) + randRange(-30, 30))));
+            const g = Math.min(255, Math.max(0, Math.round(lerp(parentA.color.g, parentB.color.g, randRange(0, 1)) + randRange(-30, 30))));
+            const b = Math.min(255, Math.max(0, Math.round(lerp(parentA.color.b, parentB.color.b, randRange(0, 1)) + randRange(-30, 30))));
             const color = { r, g, b };
 
             // Create the particle

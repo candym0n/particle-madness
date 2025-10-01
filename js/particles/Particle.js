@@ -34,7 +34,7 @@ export class Particle {
         /** @type {Particle} */
         this.following = null; // particle this one wants to breed with
         /** @type {number} */
-        this.followingDiversity = 0; // diversity of the above relative to this
+        this.followingDiversity = NaN; // diversity of the above relative to this
         
         /** @type {number} */
         this.recoveryTimer = 5; // time in ms until can interact again
@@ -61,45 +61,62 @@ export class Particle {
         this.x += this.vx;
         this.y += this.vy;
 
+        let localDiv = 0;
+
         if (!this.inRecovery) {
             // We are lonely :(
             if (neighbors.length === 0)
-                this.lookingRadius += dt * 10; // increase search radius
+                this.lookingRadius += dt * 100; // Increase search radius
             else
-                this.lookingRadius = PARTICLE_VICINITY; // reset search radius
+                this.lookingRadius = PARTICLE_VICINITY; // Reset search radius
+
+            let neighborCounter = 0;
 
             for (let n of neighbors) {
                 // Diversity of neighbor
                 const div = diversity(this, n);
+
+                // Update the local diversity average
+                localDiv = (localDiv * neighborCounter++ + div) / neighborCounter;
                 
-                // Try to nteract with any open neighbor that we are touching
-                if (interact(this, n)) {
+                // Follow the neighbor if it's good
+                if (
+                    (localDiv < 10 && !(div < this.followingDiversity)) ||
+                    (localDiv > 10 && !(div > this.followingDiversity))
+                ) {
                     this.following = n;
                     this.followingDiversity = div;
                 }
 
-                // Find and follow the most diverse neighbor
-                if (div > this.followingDiversity) {
-                    this.following = n;
-                    this.followingDiversity = div;
+                // Try to interact with any open neighbor that we are touching
+                interact(this, n, neighbors.length > 20);
+            }
+
+            // Move towards the particle we follow
+            if (this.following) {
+                const dx = this.following.x - this.x;
+                const dy = this.following.y - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist > 1) {
+                    this.vx += (dx / dist) * dt;
+                    this.vy += (dy / dist) * dt;
                 }
             }
-        }
-
-        // Move towards the particle we follow
-        if (this.following) {
-            const dx = this.following.x - this.x;
-            const dy = this.following.y - this.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist > 1) {
-                this.vx += (dx / dist) * dt;
-                this.vy += (dy / dist) * dt;
+        } else {
+            // Xenophobia
+            for (let n of neighbors) {
+                const dx = n.x - this.x;
+                const dy = n.y - this.y;
+                const lenSquared = dx * dx + dy * dy;
+                if (lenSquared < 0.1) continue;
+                this.vx -= (dx / lenSquared) * dt;
+                this.vy -= (dy / lenSquared) * dt;
             }
         }
 
         // Friction
-        //this.vx *= 0.99;
-        //this.vy *= 0.99;
+        this.vx *= 0.9;
+        this.vy *= 0.9;
     }
 
     /**

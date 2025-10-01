@@ -24,4 +24,13 @@ export const PARTICLE_RADIUS = 5;
  * The recovery time after interaction (in milliseconds).
  * @type {number}
  */
-export const PARTICLE_RECOVERY = 1000;
+export const PARTICLE_RECOVERY = 2000;
+
+export const INTERACTION_PROBABILITIES = {
+    // Always 10 percent
+    IDENTITY: 0.1,
+
+    // Changes based on diversity
+    BREED_MIN: 0.3, // 0 diversity
+    BREED_MAX: 0.6, // Add this if there's 100% diversity (nearly impossible)
+}

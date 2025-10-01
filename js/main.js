@@ -1,5 +1,6 @@
-import { INITIAL_SYSTEM } from './constants.js';
+import { PARTICLE_RADIUS } from './constants.js';
 import { ParticleSystem } from './particles/ParticleSystem.js';
+import { Particle } from './particles/Particle.js';
 
 /** Main entry point for modular particle canvas. */
 
@@ -25,12 +26,41 @@ function resizeCanvas() {
 }
 window.addEventListener('resize', resizeCanvas);
 
+// Returns a list of particles
+function circle(center, radius, color, list=[]) {
+    for (let t = 0; t < Math.PI * 2; t += Math.PI / 3) {
+        let dirX = Math.cos(t);
+        let dirY = Math.sin(t);
+
+        for (let i = 0; i < radius; ++i) {
+            list.push(new Particle(
+                center[0] + dirX * PARTICLE_RADIUS * i * 5,
+                center[1] + dirY * PARTICLE_RADIUS * i * 5,
+                0,
+                0,
+                color,
+                100
+            ));
+        }
+    }
+}
+
 /**
  * Initialize particle system and begin animation.
  */
 function init() {
     resizeCanvas();
-    system = new ParticleSystem(canvas.width, canvas.height, INITIAL_SYSTEM);
+    
+    const redCenter = [100, 100];
+    const greenCenter = [-100, 100];
+    const blueCenter = [0, 0];
+
+    let initialSystem = [];
+    circle(redCenter, 2, { r: 255, g: 0, b: 0 }, initialSystem);
+    circle(greenCenter, 2, { r: 0, g: 255, b: 0 }, initialSystem);
+    circle(blueCenter, 2, { r: 0, g: 0, b: 255 }, initialSystem);
+    
+    system = new ParticleSystem(canvas.width, canvas.height, initialSystem);
 }
 init();
 
@@ -45,7 +75,9 @@ function animate(now) {
     ctx.clearRect(0, 0, canvas.width, canvas.height); // clear with default origin
 
     ctx.translate(canvas.width/2, canvas.height/2); // move origin to center
-    system.update(dt);
+    for (let i = 0; i < 10; ++i) {
+        system.update(dt);
+    }
     system.draw(ctx);
 
     ctx.restore();
