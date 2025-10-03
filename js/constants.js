@@ -46,4 +46,7 @@ export const CONTROL_ELEMENTS = {
 
     AVG_COLOR_RGB: document.getElementById('avgColorRGB'),
     AVG_COLOR_SWATCH: document.getElementById('avgColorSwatch'),
+
+    INERTIA_SLIDER: document.getElementById('inertiaSlider'),
+    INERTIA_VALUE: document.getElementById('inertiaValue')
 }

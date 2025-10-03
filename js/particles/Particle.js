@@ -56,15 +56,26 @@ export class Particle {
      * @param {Particle[]} neighbors - Nearby particles
      * @param {(parentA: Particle, parentB: Particle) => void} interact - A function to breed
      * @param {number} diversityNum - Tendancy to explore diversity (0-100)
+     * @param {number} inertiaMultiplier - % velocity retained for next update
      */
-    update(dt, neighbors, interact, diversityNum) {
+    update(dt, neighbors, interact, diversityNum, inertiaMultiplier) {
         // Update the position
         this.x += this.vx;
         this.y += this.vy;
 
         let localDiv = 0;
 
-        if (!this.inRecovery) {
+        if (this.inRecovery) {
+            // Xenophobia during recovery
+            for (let n of neighbors) {
+                const dx = n.x - this.x;
+                const dy = n.y - this.y;
+                const lenSquared = dx * dx + dy * dy;
+                if (lenSquared < 0.1) continue;
+                this.vx -= (dx / lenSquared) * dt;
+                this.vy -= (dy / lenSquared) * dt;
+            }
+        } else {
             // We are lonely :(
             if (neighbors.length === 0)
                 this.lookingRadius += dt * 100; // Increase search radius
@@ -103,21 +114,11 @@ export class Particle {
                     this.vy += (dy / dist) * dt;
                 }
             }
-        } else {
-            // Xenophobia
-            for (let n of neighbors) {
-                const dx = n.x - this.x;
-                const dy = n.y - this.y;
-                const lenSquared = dx * dx + dy * dy;
-                if (lenSquared < 0.1) continue;
-                this.vx -= (dx / lenSquared) * dt;
-                this.vy -= (dy / lenSquared) * dt;
-            }
         }
 
         // Friction
-        this.vx *= 0.9;
-        this.vy *= 0.9;
+        this.vx *= inertiaMultiplier;
+        this.vy *= inertiaMultiplier;
     }
 
     /**
@@ -127,7 +128,7 @@ export class Particle {
      */
     draw(ctx, radius) {
         ctx.save();
-        ctx.globalAlpha = Math.max(this.life / 100, 0);
+        //ctx.globalAlpha = Math.max(this.life / 100, 0);
         ctx.fillStyle = `rgb(${this.color.r}, ${this.color.g}, ${this.color.b})`;
         ctx.beginPath();
         ctx.arc(this.x, this.y, radius, 0, Math.PI * 2);

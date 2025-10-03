@@ -31,14 +31,15 @@ export class ParticleSystem {
      * Update all particles in the system.
      * @param {number} dt
      * @param {number} diversity - Tendancy to explore diversity (0-100)
+     * @param {number} inertiaMultiplier - 0 = at rest, 1 = full speed
      */
-    update(dt, diversity=0) {
+    update(dt, diversity=0, inertiaMultiplier=0.9) {
         const self = this;
 
         for (let i = this.particles.length - 1; i >= 0; --i) {
             let p = this.particles[i];
             const neighbors = self.findNeighbors(p);
-            p.update(dt, neighbors, self.attemptBreed.bind(self), diversity);
+            p.update(dt, neighbors, self.attemptBreed.bind(self), diversity, inertiaMultiplier);
            
             p.recoveryTimer -= dt * 1000;
             p.life -= dt;

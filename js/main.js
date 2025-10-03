@@ -12,6 +12,7 @@ let system;
 let running = true;
 let speed = 5; // 1-10
 let diversity = 10; // 0-100
+let inertiaMultiplier = 0.9; // 0 - 1
 
 /**
  * Resize canvas and re-center origin.
@@ -78,7 +79,7 @@ function animate(now) {
 
     ctx.translate(canvas.width/2, canvas.height/2); // move origin to center
     for (let i = 0; i < speed; ++i) {
-        system.update(dt, diversity);
+        system.update(dt, diversity, inertiaMultiplier);
     }
     system.draw(ctx);
 
@@ -111,6 +112,11 @@ CONTROL_ELEMENTS.DIVERSITY_SLIDER.addEventListener('input', (e) => {
     CONTROL_ELEMENTS.DIVERSITY_VALUE.textContent = diversity + "%";
 });
 
+CONTROL_ELEMENTS.INERTIA_SLIDER.addEventListener('input', (e) => {
+    inertiaMultiplier = e.target.value;
+    CONTROL_ELEMENTS.INERTIA_VALUE.textContent = inertiaMultiplier;
+})
+
 const collapseBtn = document.getElementById('collapseToggle');
 const controls = document.querySelector('.particle-controls');
 
@@ -125,4 +131,3 @@ collapseBtn.addEventListener('click', () => {
         collapseBtn.setAttribute('aria-label', 'Collapse');
     }
 });
-
