@@ -31,7 +31,7 @@ export const INTERACTION_PROBABILITIES = {
     IDENTITY: 0.1,
 
     // Changes based on diversity
-    BREED_MIN: 0.3, // 0 diversity
+    BREED_MIN: 0.5, // 0 diversity
     BREED_MAX: 0.6, // Add this if there's 100% diversity (nearly impossible)
 }
 

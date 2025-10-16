@@ -64,7 +64,7 @@ export function addToAverage(existingAverage, count, newParticle) {
  */
 export function removeFromAverage(existingAverage, count, oldParticle) {
     if (count <= 1) {
-        return { r: 1/3, g: 1/3, b: 1/3 }; // reset to neutral
+        return { r: 85, g: 85, b: 85 }; // reset to neutral
     }
 
     return {

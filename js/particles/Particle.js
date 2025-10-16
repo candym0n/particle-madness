@@ -1,5 +1,5 @@
 import { PARTICLE_RADIUS, PARTICLE_VICINITY } from "../constants.js";
-import { distSquared, diversity } from "../utils.js";
+import { distSquared, diversity, lerp } from "../utils.js";
 import { ParticleSystem } from "./ParticleSystem.js";
 
 /**
@@ -115,6 +115,17 @@ export class Particle {
                 }
             }
         }
+
+        // Repelled from the walls no matter what
+        let dx, dy;
+        if ((dx = window.innerWidth / 2 - this.x) < 50)
+            this.vx -= 100 / dx;
+        if ((dx = window.innerWidth / 2 + this.x) < 50)
+            this.vx += 100 / dx;
+        if ((dy = window.innerHeight / 2 - this.y) < 50)
+            this.vy -= 100 / dy;
+        if ((dy = window.innerHeight / 2 + this.y) < 50)
+            this.vy += 100 / dy;
 
         // Friction
         this.vx *= inertiaMultiplier;

@@ -11,7 +11,7 @@ const playPauseBtn = document.getElementById('playPauseBtn');
 let system;
 let running = true;
 let speed = 5; // 1-10
-let diversity = 10; // 0-100
+let diversity = 70; // 0-100
 let inertiaMultiplier = 0.9; // 0 - 1
 
 /**
