@@ -15,6 +15,7 @@ let diversity = 70; // 0-100
 let inertiaMultiplier = 0.9; // 0 - 1
 let x, y;
 let erase = false;
+let eraserRadius = 50;
 
 /**
  * Resize canvas and re-center origin.
@@ -89,7 +90,7 @@ function animate(now) {
     if (erase) {
         ctx.strokeStyle = "white";
         ctx.beginPath();
-        ctx.arc(x, y, 50, 0, 2 * Math.PI);
+        ctx.arc(x, y, eraserRadius, 0, 2 * Math.PI);
         ctx.stroke();
         ctx.closePath();
     }
@@ -125,10 +126,10 @@ document.addEventListener("keydown", ({ key }) => {
             speed = Math.max(1, speed - 1);
             break;
         case "arrowleft":
-            speed = 1;
+            eraserRadius = Math.max(1, eraserRadius - 1);
             break;
         case "arrowright":
-            speed = Math.min(500, speed + 10);
+            eraserRadius = Math.min(500, eraserRadius + 1);
             break;
         case "control":
             erase = !erase;
@@ -176,7 +177,7 @@ document.addEventListener("mouseup", () => mouseDown = false);
 
 document.addEventListener("mousemove", ({ clientX, clientY }) => {
     if (mouseDown && erase)
-        system.erase(clientX - canvas.width / 2, clientY - canvas.height / 2, 50);
+        system.erase(clientX - canvas.width / 2, clientY - canvas.height / 2, eraserRadius);
     x = clientX - canvas.width / 2;
     y = clientY - canvas.height / 2;
 });
