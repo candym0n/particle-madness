@@ -57,10 +57,10 @@ export function addToAverage(existingAverage, count, newParticle) {
 
 /**
  * Compute the new average color after removing a particle.
- * @param {number} existingAverage 
+ * @param {Object} existingAverage 
  * @param {number} count 
  * @param {Particle} oldParticle 
- * @returns {number}
+ * @returns {Object}
  */
 export function removeFromAverage(existingAverage, count, oldParticle) {
     if (count <= 1) {

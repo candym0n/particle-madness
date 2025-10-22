@@ -9,11 +9,11 @@ export class ParticleSystem {
     /**
      * @param {number} width - Canvas width
      * @param {number} height - Canvas height
-     * @param {object[]} initialParticles - Array of initial particle configs
+     * @param {object[]} initialSystem - Array of initial particle configs
      */
-    constructor(width, height, initialParticles) {
+    constructor(width, height, initialSystem) {
         /** @type {Particle[]} */
-        this.particles = initialParticles.map(
+        this.particles = initialSystem.map(
             cfg => new Particle(cfg.x, cfg.y, cfg.vx, cfg.vy, cfg.color, cfg.life)
         );
         /** @type {number} */
@@ -24,7 +24,24 @@ export class ParticleSystem {
         /**
          * Debugging info
         */
-       this.averageColor = { r: 255/3, g: 255/3, b: 255/3 };
+        this.averageColor = { r: 0, g: 0, b: 0 };
+
+        for (let i = 0; i < this.particles.length; ++i) {
+            this.averageColor = addToAverage(this.averageColor, i, this.particles[i]);
+        }
+    }
+
+    /**
+     * Erase all particles in a circle
+     * @param {number} x - X position of the center
+     * @param {number} y - Y position of the center
+     * @param {number} radius - Radius of the circle
+     */
+    erase(x, y, radius) {
+        for (let particle of this.particles) {
+            if ((particle.x - x) ** 2 + (particle.y - y) ** 2 <= radius * radius)
+                particle.life = 0;
+        }
     }
 
     /**
@@ -33,35 +50,35 @@ export class ParticleSystem {
      * @param {number} diversity - Tendancy to explore diversity (0-100)
      * @param {number} inertiaMultiplier - 0 = at rest, 1 = full speed
      */
-    update(dt, diversity=0, inertiaMultiplier=0.9) {
+    update(dt, diversity = 0, inertiaMultiplier = 0.9) {
         const self = this;
 
         for (let i = this.particles.length - 1; i >= 0; --i) {
             let p = this.particles[i];
             const neighbors = self.findNeighbors(p);
             p.update(dt, neighbors, self.attemptBreed.bind(self), diversity, inertiaMultiplier);
-           
+
             p.recoveryTimer -= dt * 1000;
             p.life -= dt;
 
             // Bouncy bouncy
-            if (p.x < -this.width/2) {
-                p.x = -this.width/2;
+            if (p.x < -this.width / 2) {
+                p.x = -this.width / 2;
                 p.vx = Math.abs(p.vx);
             }
 
-            if (p.x > this.width/2) {
-                p.x = this.width/2;
+            if (p.x > this.width / 2) {
+                p.x = this.width / 2;
                 p.vx = -Math.abs(p.vx);
             }
 
-            if (p.y < -this.height/2) {
-                p.y = -this.height/2;
+            if (p.y < -this.height / 2) {
+                p.y = -this.height / 2;
                 p.vy = Math.abs(p.vy);
             }
 
-            if (p.y > this.height/2) {
-                p.y = this.height/2;
+            if (p.y > this.height / 2) {
+                p.y = this.height / 2;
                 p.vy = -Math.abs(p.vy);
             }
 
@@ -117,24 +134,35 @@ export class ParticleSystem {
         // Are they both allowed to breed?
         if (parentA.inRecovery || parentB.inRecovery)
             return false;
-        
+
         // Are they even touching?
         if (distSquared(parentA.x, parentA.y, parentB.x, parentB.y) > (PARTICLE_RADIUS * 2) ** 2)
             return false;
 
         parentA.recoveryTimer = PARTICLE_RECOVERY;
         parentB.recoveryTimer = PARTICLE_RECOVERY;
-        
+
         // Probability check
         let random = Math.random();
 
         if (random <= INTERACTION_PROBABILITIES.IDENTITY) {
-            parentA.color = { r: lerp(parentA.color.r, parentB.color.r, 0.3 + randRange(-0.1, 0.1)),
-                              g: lerp(parentA.color.g, parentB.color.g, 0.3 + randRange(-0.1, 0.1)),
-                              b: lerp(parentA.color.b, parentB.color.b, 0.3 + randRange(-0.1, 0.1)) };
-            parentB.color = { r: lerp(parentB.color.r, parentA.color.r, 0.3 + randRange(-0.1, 0.1)),
-                              g: lerp(parentB.color.g, parentA.color.g, 0.3 + randRange(-0.1, 0.1)),
-                              b: lerp(parentB.color.b, parentA.color.b, 0.3 + randRange(-0.1, 0.1)) };
+            this.averageColor = removeFromAverage(this.averageColor, this.particles.length, parentA);
+            this.averageColor = removeFromAverage(this.averageColor, this.particles.length - 1, parentB);
+
+            parentA.color = {
+                r: lerp(parentA.color.r, parentB.color.r, 0.3 + randRange(-0.1, 0.1)),
+                g: lerp(parentA.color.g, parentB.color.g, 0.3 + randRange(-0.1, 0.1)),
+                b: lerp(parentA.color.b, parentB.color.b, 0.3 + randRange(-0.1, 0.1))
+            };
+            parentB.color = {
+                r: lerp(parentB.color.r, parentA.color.r, 0.3 + randRange(-0.1, 0.1)),
+                g: lerp(parentB.color.g, parentA.color.g, 0.3 + randRange(-0.1, 0.1)),
+                b: lerp(parentB.color.b, parentA.color.b, 0.3 + randRange(-0.1, 0.1))
+            };
+
+            // Update the average color
+            this.averageColor = addToAverage(this.averageColor, this.particles.length - 2, parentA);
+            this.averageColor = addToAverage(this.averageColor, this.particles.length - 1, parentB);
             return true;
         } else if (!dontMate && random <= INTERACTION_PROBABILITIES.BREED_MIN + INTERACTION_PROBABILITIES.BREED_MAX * diversity(parentA, parentB) / 100) { // up to 40% chance of breeding
             parentA.life -= 20;
@@ -145,7 +173,7 @@ export class ParticleSystem {
             const y = (parentA.y + parentB.y) / 2;
             const vx = randRange(-1, 1);
             const vy = randRange(-1, 1);
-            
+
             // Mix colors with some randomness
             const r = Math.min(255, Math.max(0, Math.round(lerp(parentA.color.r, parentB.color.r, randRange(0, 1)) + randRange(-30, 30))));
             const g = Math.min(255, Math.max(0, Math.round(lerp(parentA.color.g, parentB.color.g, randRange(0, 1)) + randRange(-30, 30))));
@@ -154,8 +182,8 @@ export class ParticleSystem {
 
             // Create the particle
             let newParticle = new Particle(x, y, vx, vy, color, 100);
-            this.particles.push(newParticle);
             this.averageColor = addToAverage(this.averageColor, this.particles.length, newParticle);
+            this.particles.push(newParticle);
             return true;
         }
 

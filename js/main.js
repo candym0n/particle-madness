@@ -9,10 +9,12 @@ const ctx = canvas.getContext('2d');
 const playPauseBtn = document.getElementById('playPauseBtn');
 
 let system;
-let running = true;
+let running = false;
 let speed = 5; // 1-10
 let diversity = 70; // 0-100
 let inertiaMultiplier = 0.9; // 0 - 1
+let x, y;
+let erase = false;
 
 /**
  * Resize canvas and re-center origin.
@@ -59,9 +61,9 @@ function init() {
     const blueCenter = [0, 0];
 
     let initialSystem = [];
-    circle(redCenter, 2, { r: 255, g: 0, b: 0 }, initialSystem);
-    circle(greenCenter, 2, { r: 0, g: 255, b: 0 }, initialSystem);
-    circle(blueCenter, 2, { r: 0, g: 0, b: 255 }, initialSystem);
+    circle(redCenter, 1, { r: 255, g: 0, b: 0 }, initialSystem);
+    circle(greenCenter, 1, { r: 0, g: 255, b: 0 }, initialSystem);
+    circle(blueCenter, 1, { r: 0, g: 0, b: 255 }, initialSystem);
     
     system = new ParticleSystem(canvas.width, canvas.height, initialSystem);
 }
@@ -69,7 +71,6 @@ init();
 
 let lastTime = performance.now();
 function animate(now) {
-    if (!running) return;
     const dt = (now - lastTime) / 1000;
     lastTime = now;
 
@@ -78,11 +79,21 @@ function animate(now) {
     ctx.clearRect(0, 0, canvas.width, canvas.height); // clear with default origin
 
     ctx.translate(canvas.width/2, canvas.height/2); // move origin to center
-    for (let i = 0; i < speed; ++i) {
-        system.update(dt, diversity, inertiaMultiplier);
+    
+    for (let i = 0; i < (running ? speed : 1); ++i) {
+        system.update(running ? dt : 0, diversity, inertiaMultiplier);
     }
+    
     system.draw(ctx);
 
+    if (erase) {
+        ctx.strokeStyle = "white";
+        ctx.beginPath();
+        ctx.arc(x, y, 50, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.closePath();
+    }
+    
     ctx.restore();
     requestAnimationFrame(animate);
 }
@@ -102,6 +113,31 @@ function togglePlayPause() {
 }
 
 playPauseBtn.addEventListener('click', togglePlayPause);
+document.addEventListener("keydown", ({ key }) => {
+    switch (key.toLowerCase()) {
+        case "p":
+            togglePlayPause();
+            break;
+        case "arrowup":
+            speed = Math.min(500, speed + 1);
+            break;
+        case "arrowdown":
+            speed = Math.max(1, speed - 1);
+            break;
+        case "arrowleft":
+            speed = 1;
+            break;
+        case "arrowright":
+            speed = Math.min(500, speed + 10);
+            break;
+        case "control":
+            erase = !erase;
+            break;
+    }
+    
+    CONTROL_ELEMENTS.SPEED_VALUE.textContent = speed;
+});
+
 CONTROL_ELEMENTS.SPEED_SLIDER.addEventListener('input', (e) => {
     speed = e.target.value;
     CONTROL_ELEMENTS.SPEED_VALUE.textContent = speed;
@@ -115,7 +151,7 @@ CONTROL_ELEMENTS.DIVERSITY_SLIDER.addEventListener('input', (e) => {
 CONTROL_ELEMENTS.INERTIA_SLIDER.addEventListener('input', (e) => {
     inertiaMultiplier = e.target.value;
     CONTROL_ELEMENTS.INERTIA_VALUE.textContent = inertiaMultiplier;
-})
+});
 
 const collapseBtn = document.getElementById('collapseToggle');
 const controls = document.querySelector('.particle-controls');
@@ -130,4 +166,17 @@ collapseBtn.addEventListener('click', () => {
         collapseBtn.textContent = '-';
         collapseBtn.setAttribute('aria-label', 'Collapse');
     }
+});
+
+// Logic for erasing particles
+let mouseDown = false;
+
+document.addEventListener("mousedown", () => mouseDown = true);
+document.addEventListener("mouseup", () => mouseDown = false);
+
+document.addEventListener("mousemove", ({ clientX, clientY }) => {
+    if (mouseDown && erase)
+        system.erase(clientX - canvas.width / 2, clientY - canvas.height / 2, 50);
+    x = clientX - canvas.width / 2;
+    y = clientY - canvas.height / 2;
 });

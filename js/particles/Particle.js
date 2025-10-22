@@ -59,6 +59,8 @@ export class Particle {
      * @param {number} inertiaMultiplier - % velocity retained for next update
      */
     update(dt, neighbors, interact, diversityNum, inertiaMultiplier) {
+        if (!dt) return;
+
         // Update the position
         this.x += this.vx;
         this.y += this.vy;
